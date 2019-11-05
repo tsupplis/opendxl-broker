@@ -38,7 +38,6 @@ RUN cd /tmp \
     && make \
     && make install
 
-
 # Build broker
 COPY src /tmp/src
 RUN cd /tmp/src && make
@@ -61,22 +60,9 @@ FROM registry.redhat.io/ubi8/ubi:latest
 ARG DXL_CONSOLE_VERSION=0.3.3
 
 # Install packages
-#RUN apt-get update -y \
-#    && apt-get install -y libssl1.0 wget uuid-runtime python iproute2 procps \
-#    && apt-get clean \
-#    && rm -rf /var/lib/apt/lists/*
-
-RUN yum install -y wget python2-pip openssl procps-ng uuid libuuid iproute
-RUN alternatives --set python /usr/bin/python2
-#RUN alternatives --set pip /usr/bin/pip2
-RUN pip2 install dxlconsole==${DXL_CONSOLE_VERSION}
-
-# Install Python PIP
-#RUN wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
-#	&& python get-pip.py --disable-pip-version-check --no-cache-dir \
-#    && rm -f get-pip.py \
-#    && cp -f /usr/local/bin/pip2 /usr/local/bin/pip \
-#    && pip install dxlconsole==${DXL_CONSOLE_VERSION}
+RUN yum install -y wget python2-pip openssl procps-ng uuid libuuid iproute \
+ && alternatives --set python /usr/bin/python2 \
+ && pip2 install dxlconsole==${DXL_CONSOLE_VERSION}
 
 COPY dxlbroker /dxlbroker
 COPY LICENSE* /dxlbroker/
