@@ -3,7 +3,7 @@
 ###############################################################################
 
 FROM centos:8 as builder
-ARG build_docs=true
+ARG build_docs=false
 
 # Packages (OpenSSL, Boost)
 RUN yum group install -y "Development Tools" \
