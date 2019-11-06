@@ -2,12 +2,12 @@
 # Compile Broker
 ###############################################################################
 
-FROM debian:stretch-slim as builder
-ARG build_docs=false
+FROM centos:8 as builder
+ARG build_docs=true
 
 # Packages (OpenSSL, Boost)
-RUN apt-get update -y \
-    && apt-get install -y libssl-dev libboost-dev cmake uuid-dev wget build-essential
+RUN yum group install -y "Development Tools" \
+    && yum install -y openssl-devel boost-devel cmake libuuid-devel wget 
 
 # Message Pack
 RUN cd /tmp \
@@ -45,7 +45,9 @@ RUN cd /tmp/src && make
 # Generate documentation
 COPY docs /tmp/docs
 RUN mkdir /tmp/docs-output
-RUN if [ "$build_docs" = "true" ]; then apt-get -y install flex bison python3 doxygen \
+RUN if [ "$build_docs" = "true" ]; then dnf install -y 'dnf-command(config-manager)' \
+    && yum config-manager --set-enabled PowerTools \
+    && yum -y install flex bison python3 doxygen \
     && cd /tmp/docs \
     && . /tmp/src/version \
     && sed -i "s,@PROJECT_NUMBER@,$SOMAJVER.$SOMINVER.$SOSUBMINVER.$SOBLDNUM,g" doxygen.config \
