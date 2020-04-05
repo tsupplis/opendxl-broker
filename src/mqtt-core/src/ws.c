@@ -176,8 +176,7 @@ callback_mqtt(struct lws *wsi, enum lws_callback_reasons reason,
                         mqtt3_context_disconnect(db, mosq);
                     }
                     LOG_DEBUG("Destroy WSI-1: wsi[%p] num_id[%d]", (void*)wsi, mosq->numericId);
-                    db->contexts[mosq->numericId] = NULL;
-                    mqtt3_context_cleanup(db, mosq, true, true);                
+                    mosq->wsi = NULL;
                 }
                 HASH_DEL(wsi_context_map, s);
                 free(s);
@@ -192,8 +191,7 @@ callback_mqtt(struct lws *wsi, enum lws_callback_reasons reason,
                         mqtt3_context_disconnect(db, mosq);
                     }
                     LOG_DEBUG("Destroy WSI: wsi[%p] num_id[%d]", (void*)wsi, mosq->numericId);
-                    db->contexts[mosq->numericId] = NULL;
-                    mqtt3_context_cleanup(db, mosq, true, true);                
+                    mosq->wsi = NULL;
                 }
                 data->mosq = NULL;
             }
@@ -324,6 +322,7 @@ callback_mqtt(struct lws *wsi, enum lws_callback_reasons reason,
             // From now on, use the "user" parameter to access the context.
             data->mosq = s->context;
             HASH_DEL(wsi_context_map, s);
+            free(s);
 
             // Fill in the address field.
             char clientIP[127] = {0};
@@ -353,7 +352,7 @@ callback_mqtt(struct lws *wsi, enum lws_callback_reasons reason,
 
         // If the connection is marked dead, nothing to do for us.
         if(data->mosq->state == mosq_cs_ws_dead)
-            return 0;
+            return -1;
 
         ret = _mosquitto_packet_write(data->mosq);
         LOG_DEBUG("Exiting LWS_CALLBACK_SERVER_WRITEABLE. wsi[%p]", (void*)wsi);
